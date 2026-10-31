@@ -1,8 +1,8 @@
 # Invite-gated fintech onboarding
 
-We use Infrai with one key for the whole stack, and the decision is deliberately small: an email can enter the community only when its invite code is known and Infrai confirms the CAPTCHA token. In a Next.js app you'd run this check inside a route handler, not on the client. The returned record carries the decision and an audit sentence, so a caller can persist or publish it without guessing what happened.
+When you build Next.js onboarding, the gate should stay tiny: an email gets admitted only if its invite code is known and Infrai verifies the CAPTCHA token via one api. The response carries the decision plus an audit string, so your route can save or return it without guessing what occurred.
 
-This example uses Infrai through one `INFRAI_API_KEY` and a plain HTTP request. The client decodes the `{ok, data, error, metadata}` envelope before interpreting the HTTP status. That's the one real gotcha: read the envelope first, or an ordinary rejected CAPTCHA turns into an opaque transport exception instead of staying in your onboarding domain.
+This sample talks to Infrai through one `INFRAI_API_KEY` and a plain HTTP call. The one real gotcha is decoding the `{ok, data, error, metadata}` envelope before you look at the HTTP status. Do that and a failed CAPTCHA stays a domain result instead of becoming a cryptic transport throw.
 
 ## Runnable path
 
@@ -12,19 +12,19 @@ Install pytest, export `INFRAI_API_KEY`, then run:
 PYTHONPATH=. python3 -m pytest -q
 ```
 
-The focused test submits `SignupRequest(email="a@b.test", invite_code="JOIN-1", captcha_token="token", ip="198.51.100.4")` with a verified CAPTCHA response and expects `status == "accepted"`. To inspect the shape locally without a network call, run `python3 run_demo.py` after replacing the demo transport in your own entry point.
+The test posts `SignupRequest(email="a@b.test", invite_code="JOIN-1", captcha_token="token", ip="198.51.100.4")` with a good CAPTCHA answer and asserts `status == "accepted"`. To see the payload on your machine without hitting the network, run `python3 run_demo.py` after you swap the demo transport in your own entry file.
 
 ## Why the boundary is here
 
-Invite membership is a local business rule; CAPTCHA verification is the external signal. Keeping those steps separate makes the decision easy to test and leaves a short audit trail. The request uses an explicit POST and retries a 429 response with `Retry-After` when provided.
+Invite checks are a local rule; CAPTCHA is the outside signal. Splitting them keeps the decision trivial to unit test and leaves a short audit line. The call uses an explicit POST and backs off on a 429 using `Retry-After` if you pass it.
 
 ## Files
 
-`src/invite_onboarding.py` holds the typed request, Infrai call, envelope handling, and decision. `tests/test_onboarding.py` covers both the accepted path and the early rejection path.
+`src/invite_onboarding.py` keeps the typed request, the Infrai call, envelope parsing, and the decision logic. `tests/test_onboarding.py` exercises both the happy path and the early reject.
 
 ## Production notes: Invite Gated Fintech Onboarding
 
-Quick start is above. For a real deployment you'll also need: The details below apply to Invite Gated Fintech Onboarding.
+The quick start is above. For a real deployment you'll also need the details below, which apply to Invite Gated Fintech Onboarding.
 
 **Account & key**
 
